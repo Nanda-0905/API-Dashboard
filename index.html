@@ -55,9 +55,9 @@
         <h1>Live Public API Dashboard</h1>
         <div class="grid-container">
 
-            <!-- Card 1: User Geo Location (IP API) -->
+            <!-- Card 1: Random Country (REST Countries API) -->
             <div class="card">
-                <h3 class="card-title">📍 Your Location (IP-API)</h3>
+                <h3 class="card-title">🌍 Random Country</h3>
                 <div id="location-data" class="card-content">Loading...</div>
             </div>
 
@@ -79,7 +79,7 @@
                 <div id="activity-data" class="card-content">Loading...</div>
             </div>
 
-            <!-- Card 5: Bitcoin Price (CoinDesk API) -->
+            <!-- Card 5: Bitcoin Price (CoinGecko API) -->
             <div class="card">
                 <h3 class="card-title">💰 Bitcoin Price</h3>
                 <div id="crypto-data" class="card-content">Loading...</div>
@@ -109,34 +109,35 @@
                 }
             }
 
-            // 1. IP-API: Gets user location based on IP address
-            // No API key required.
-            fetchAPI('http://ip-api.com/json/', 'location-data', (data) => {
-                return `You are in: <strong>${data.city}</strong>, ${data.country}<br>ISP: ${data.isp}`;
+            // 1. REST Countries API: Gets a random country
+            // No API key required. CORS enabled.
+            fetchAPI('https://restcountries.com/v3.1/all', 'location-data', (data) => {
+                const country = data[Math.floor(Math.random() * data.length)];
+                return `<strong>${country.name.common}</strong><br>Capital: ${country.capital?.[0] || 'N/A'}<br>Region: ${country.region}`;
             });
 
             // 2. Quotable API: Fetches a random quote
-            // No API key required.
+            // No API key required. CORS enabled.
             fetchAPI('https://api.quotable.io/random', 'quote-data', (data) => {
                 return `"${data.content}" <br> - <em>${data.author}</em>`;
             });
 
             // 3. Dog CEO API: Fetches a random dog image
-            // No API key required.
+            // No API key required. CORS enabled.
             fetchAPI('https://dog.ceo/api/breeds/image/random', 'dog-data', (data) => {
                 return `<img src="${data.message}" alt="Random Dog">`;
             });
 
             // 4. Bored API: Suggests a random activity
-            // No API key required.
+            // No API key required. CORS enabled.
             fetchAPI('https://www.boredapi.com/api/activity', 'activity-data', (data) => {
                 return `Activity: ${data.activity}<br>Type: ${data.type}<br>Participants: ${data.participants}`;
             });
 
-            // 5. CoinDesk API: Current Bitcoin price
-            // No API key required.
-            fetchAPI('https://api.coindesk.com/v1/bpi/currentprice.json', 'crypto-data', (data) => {
-                return `USD: ${data.bpi.USD.rate}<br>EUR: ${data.bpi.EUR.rate}`;
+            // 5. CoinGecko API: Current Bitcoin price
+            // No API key required. CORS enabled. More reliable than CoinDesk.
+            fetchAPI('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd,eur', 'crypto-data', (data) => {
+                return `Bitcoin USD: $${data.bitcoin.usd.toLocaleString()}<br>Bitcoin EUR: €${data.bitcoin.eur.toLocaleString()}`;
             });
 
             // 6. Internal Browser API: Clock
