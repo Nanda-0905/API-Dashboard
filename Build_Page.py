@@ -1,0 +1,178 @@
+# build_page.py
+import os
+
+def create_dashboard():
+    """
+    This Python script generates a single HTML file that utilizes
+    multiple public APIs via client-side JavaScript.
+    """
+    
+    # We define the HTML content as a multi-line string.
+    # This includes CSS for styling and JavaScript for fetching API data.
+    html_content = """
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Public API Dashboard</title>
+        <style>
+            /* --- CSS STYLING --- */
+            body {
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                background-color: #f0f2f5;
+                margin: 0;
+                padding: 20px;
+                color: #333;
+            }
+            h1 {
+                text-align: center;
+                color: #2c3e50;
+            }
+            .grid-container {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                gap: 20px;
+                max-width: 1200px;
+                margin: 0 auto;
+            }
+            .card {
+                background: white;
+                border-radius: 10px;
+                padding: 20px;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                transition: transform 0.2s;
+            }
+            .card:hover {
+                transform: translateY(-5px);
+            }
+            .card-title {
+                font-size: 1.2em;
+                border-bottom: 2px solid #eee;
+                padding-bottom: 10px;
+                margin-top: 0;
+                color: #007bff;
+            }
+            .card-content {
+                font-size: 1em;
+                line-height: 1.6;
+            }
+            img { max-width: 100%; border-radius: 5px; }
+            .error { color: red; font-weight: bold; }
+        </style>
+    </head>
+    <body>
+
+        <h1>Live Public API Dashboard</h1>
+        <div class="grid-container">
+
+            <!-- Card 1: User Geo Location (IP API) -->
+            <div class="card">
+                <h3 class="card-title">📍 Your Location (IP-API)</h3>
+                <div id="location-data" class="card-content">Loading...</div>
+            </div>
+
+            <!-- Card 2: Random Quote (Quotable API) -->
+            <div class="card">
+                <h3 class="card-title">💬 Inspirational Quote</h3>
+                <div id="quote-data" class="card-content">Loading...</div>
+            </div>
+
+            <!-- Card 3: Random Dog Image (Dog CEO API) -->
+            <div class="card">
+                <h3 class="card-title">🐕 Random Dog</h3>
+                <div id="dog-data" class="card-content">Loading image...</div>
+            </div>
+
+            <!-- Card 4: Activity Suggestion (Bored API) -->
+            <div class="card">
+                <h3 class="card-title">💡 Bored? Try this</h3>
+                <div id="activity-data" class="card-content">Loading...</div>
+            </div>
+
+            <!-- Card 5: Bitcoin Price (CoinDesk API) -->
+            <div class="card">
+                <h3 class="card-title">💰 Bitcoin Price</h3>
+                <div id="crypto-data" class="card-content">Loading...</div>
+            </div>
+
+            <!-- Card 6: Current Time (Internal Browser API) -->
+            <div class="card">
+                <h3 class="card-title">⏰ Current Time</h3>
+                <div id="time-data" class="card-content">Loading...</div>
+            </div>
+
+        </div>
+
+        <script>
+            // --- JAVASCRIPT LOGIC ---
+
+            // Helper function to fetch data safely
+            async function fetchAPI(url, elementId, processFunction) {
+                try {
+                    const response = await fetch(url);
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    const data = await response.json();
+                    document.getElementById(elementId).innerHTML = processFunction(data);
+                } catch (error) {
+                    document.getElementById(elementId).innerHTML = `<span class="error">Error loading data.</span>`;
+                    console.error(`Error fetching ${url}:`, error);
+                }
+            }
+
+            // 1. IP-API: Gets user location based on IP address
+            // No API key required.
+            fetchAPI('http://ip-api.com/json/', 'location-data', (data) => {
+                return `You are in: <strong>${data.city}</strong>, ${data.country}<br>ISP: ${data.isp}`;
+            });
+
+            // 2. Quotable API: Fetches a random quote
+            // No API key required.
+            fetchAPI('https://api.quotable.io/random', 'quote-data', (data) => {
+                return `"${data.content}" <br> - <em>${data.author}</em>`;
+            });
+
+            // 3. Dog CEO API: Fetches a random dog image
+            // No API key required.
+            fetchAPI('https://dog.ceo/api/breeds/image/random', 'dog-data', (data) => {
+                return `<img src="${data.message}" alt="Random Dog">`;
+            });
+
+            // 4. Bored API: Suggests a random activity
+            // No API key required.
+            fetchAPI('https://www.boredapi.com/api/activity', 'activity-data', (data) => {
+                return `Activity: ${data.activity}<br>Type: ${data.type}<br>Participants: ${data.participants}`;
+            });
+
+            // 5. CoinDesk API: Current Bitcoin price
+            // No API key required.
+            fetchAPI('https://api.coindesk.com/v1/bpi/currentprice.json', 'crypto-data', (data) => {
+                return `USD: ${data.bpi.USD.rate}<br>EUR: ${data.bpi.EUR.rate}`;
+            });
+
+            // 6. Internal Browser API: Clock
+            // This does not use an external HTTP request, but the browser's internal API.
+            function updateTime() {
+                const now = new Date();
+                document.getElementById('time-data').innerText = now.toLocaleTimeString();
+            }
+            setInterval(updateTime, 1000); // Update every second
+
+        </script>
+    </body>
+    </html>
+    """
+
+    # --- PYTHON FILE WRITING LOGIC ---
+    filename = "index.html"
+    
+    # Write the html_content string to a file named index.html
+    with open(filename, "w", encoding="utf-8") as file:
+        file.write(html_content)
+    
+    print(f"Success! '{filename}' has been generated.")
+    print("You can now upload this file to GitHub.")
+
+# Run the function when the script is executed
+if __name__ == "__main__":
+    create_dashboard()
