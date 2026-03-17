@@ -100,27 +100,49 @@
             async function fetchAPI(url, elementId, processFunction) {
                 try {
                     const response = await fetch(url);
-                    if (!response.ok) throw new Error('Network response was not ok');
+                    if (!response.ok) throw new Error(`HTTP ${response.status} ${response.statusText}`);
                     const data = await response.json();
                     document.getElementById(elementId).innerHTML = processFunction(data);
                 } catch (error) {
-                    document.getElementById(elementId).innerHTML = `<span class="error">Error loading data.</span>`;
+                    const message = error?.message || String(error);
+                    document.getElementById(elementId).innerHTML = `<span class="error">Error loading data: ${message}</span>`;
                     console.error(`Error fetching ${url}:`, error);
                 }
             }
 
             // 1. REST Countries API: Gets a random country
             // No API key required. CORS enabled.
-            fetchAPI('https://restcountries.com/v3.1/all', 'location-data', (data) => {
+            // NOTE: The REST Countries API sometimes rejects the full "all" response; limiting fields avoids that.
+            fetchAPI('https://restcountries.com/v3.1/all?fields=name,capital,region', 'location-data', (data) => {
                 const country = data[Math.floor(Math.random() * data.length)];
                 return `<strong>${country.name.common}</strong><br>Capital: ${country.capital?.[0] || 'N/A'}<br>Region: ${country.region}`;
             });
 
-            // 2. Quotable API: Fetches a random quote
-            // No API key required. CORS enabled.
-            fetchAPI('https://api.quotable.io/random', 'quote-data', (data) => {
-                return `"${data.content}" <br> - <em>${data.author}</em>`;
-            });
+            // 2. Inspirational Quote
+            // Primary source: type.fit (no API key, should be CORS-friendly).
+            // If the request fails (network / CORS), fall back to an embedded quote list.
+            const fallbackQuotes = [
+                { text: 'The only limit to our realization of tomorrow is our doubts of today.', author: 'Franklin D. Roosevelt' },
+                { text: 'The best way to predict the future is to create it.', author: 'Peter Drucker' },
+                { text: 'You miss 100% of the shots you don’t take.', author: 'Wayne Gretzky' },
+                { text: 'Whether you think you can or you think you can’t, you’re right.', author: 'Henry Ford' }
+            ];
+
+            async function loadQuote() {
+                try {
+                    const response = await fetch('https://type.fit/api/quotes');
+                    if (!response.ok) throw new Error(`HTTP ${response.status} ${response.statusText}`);
+                    const data = await response.json();
+                    const quote = data[Math.floor(Math.random() * data.length)];
+                    document.getElementById('quote-data').innerHTML = `"${quote.text}" <br> - <em>${quote.author || 'Unknown'}</em>`;
+                } catch (error) {
+                    console.warn('Quote API failed, using local fallback.', error);
+                    const quote = fallbackQuotes[Math.floor(Math.random() * fallbackQuotes.length)];
+                    document.getElementById('quote-data').innerHTML = `"${quote.text}" <br> - <em>${quote.author || 'Unknown'}</em>`;
+                }
+            }
+
+            loadQuote();
 
             // 3. Dog CEO API: Fetches a random dog image
             // No API key required. CORS enabled.
@@ -129,10 +151,29 @@
             });
 
             // 4. Bored API: Suggests a random activity
-            // No API key required. CORS enabled.
-            fetchAPI('https://www.boredapi.com/api/activity', 'activity-data', (data) => {
-                return `Activity: ${data.activity}<br>Type: ${data.type}<br>Participants: ${data.participants}`;
-            });
+            // Fallback to a local list when the API is unreachable (DNS, network, CORS, etc.).
+            const fallbackActivities = [
+                { activity: 'Take a short walk around the block', type: 'recreational', participants: 1 },
+                { activity: 'Read a chapter of a book you own', type: 'education', participants: 1 },
+                { activity: 'Try a new recipe', type: 'cooking', participants: 1 },
+                { activity: 'Do a 5-minute stretching session', type: 'relaxation', participants: 1 },
+                { activity: 'Call a friend you haven\'t spoken to lately', type: 'social', participants: 2 }
+            ];
+
+            async function loadActivity() {
+                try {
+                    const response = await fetch('https://www.boredapi.com/api/activity');
+                    if (!response.ok) throw new Error(`HTTP ${response.status} ${response.statusText}`);
+                    const data = await response.json();
+                    document.getElementById('activity-data').innerHTML = `Activity: ${data.activity}<br>Type: ${data.type}<br>Participants: ${data.participants}`;
+                } catch (error) {
+                    console.warn('Bored API failed, using local fallback.', error);
+                    const activity = fallbackActivities[Math.floor(Math.random() * fallbackActivities.length)];
+                    document.getElementById('activity-data').innerHTML = `Activity: ${activity.activity}<br>Type: ${activity.type}<br>Participants: ${activity.participants}`;
+                }
+            }
+
+            loadActivity();
 
             // 5. CoinGecko API: Current Bitcoin price
             // No API key required. CORS enabled. More reliable than CoinDesk.
